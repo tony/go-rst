@@ -14,8 +14,10 @@ Implementation
 
 - `Public Git Hosting - docutils.git/summary <http://repo.or.cz/w/docutils.git>`_
 
-  - `statemachine.py <http://repo.or.cz/docutils.git/blob/HEAD:/docutils/docutils/statemachine.py>`_
+  - `docutils/statemachine.py <http://repo.or.cz/docutils.git/blob/HEAD:/docutils/docutils/statemachine.py>`_
     (`svn <http://sourceforge.net/p/docutils/code/HEAD/tree/trunk/docutils/docutils/statemachine.py>`__)
+
+  - `docutils/parsers/rst/states.py <http://repo.or.cz/docutils.git/blob/HEAD:/docutils/docutils/parsers/rst/states.py>`_
 
 
 UNLICENSE
@@ -33,7 +35,10 @@ References
 
 .. [3] `golang read lines from file <https://www.google.com/search?q=golang+read+lines+from+file>`_
 
-.. [4] `golang leading space <https://www.google.com/search?q=golang+leading+space>`_
+.. [4] `golang class inheritance <https://www.google.com/search?q=golang+class+inheritance>`_
+
+       `Golang concepts from an OOP point of view - GitHub <https://github.com/luciotato/golang-notes/blob/master/OOP.md>`_
+
 
 .. _Go: https://golang.org/
 .. _Golang: https://golang.org/
