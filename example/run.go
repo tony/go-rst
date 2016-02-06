@@ -1,8 +1,10 @@
 package main
 
 import (
-	".."
 	"fmt"
+
+	//rst "github.com/siongui/go-rst"
+	".."
 )
 
 func main() {

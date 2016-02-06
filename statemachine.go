@@ -123,9 +123,87 @@ type State struct {
 	// the class of the current state. Override in subclasses to avoid the
 	// defaults.
 	nestedSmKwargs map[string]string
+
+	// Debugging mode on/off.
+	debug bool
+
+	// A list of transition names in search order.
+	transitionOrder []string
+
+	// A mapping of transition names to 3-tuples containing
+	// (compiled_pattern, transition_method, next_state_name). Initialized as
+	// an instance attribute dynamically (instead of as a class attribute)
+	// because it may make forward references to patterns and methods in this
+	// or other classes.
+	transitions map[string]Transition
+
+	// A reference to the controlling `StateMachine` object.
+	stateMachine StateMachine
 }
 
-type Transition string
+/*
+   Initialize a `State` object; make & add initial transitions.
+
+   Parameters:
+
+   - `statemachine`: the controlling `StateMachine` object.
+   - `debug`: a boolean; produce verbose output if true.
+*/
+func (s *State) Init(sm StateMachine, debug bool) {
+	s.addInitialTransitions()
+
+	s.stateMachine = sm
+	s.debug = debug
+
+	/*
+	   if self.nested_sm is None:
+	       self.nested_sm = self.state_machine.__class__
+	   if self.nested_sm_kwargs is None:
+	       self.nested_sm_kwargs = {'state_classes': [self.__class__],
+	                                'initial_state': self.__class__.__name__}
+	*/
+}
+
+// Make and add transitions listed in `self.initial_transitions`.
+func (s *State) addInitialTransitions() {
+	if len(s.initialTransitions) > 0 {
+		//names, transitions := s.makeTransitions(s.initialTransitions)
+		//s.addTransitions(names, transitions)
+	}
+}
+
+/*
+   Add a list of transitions to the start of the transition list.
+
+   Parameters:
+
+   - `names`: a list of transition names.
+   - `transitions`: a mapping of names to transition tuples.
+
+   Exceptions: `DuplicateTransitionError`, `UnknownTransitionError`.
+*/
+func (s *State) addTransitions(names []string, transitions map[string]Transition) {
+	for _, name := range names {
+		if _, ok := s.transitions[name]; ok {
+			panic("DuplicateTransitionError: " + name)
+		}
+		if _, ok := transitions[name]; !ok {
+			panic("UnknownTransitionError: " + name)
+		}
+	}
+	/*
+	   self.transition_order[:0] = names
+	*/
+	for name, transition := range transitions {
+		s.transitions[name] = transition
+	}
+}
+
+type Transition struct {
+	compiledPattern  string
+	transitionMethod func()
+	nextStateName    string
+}
 
 func File2lines(filePath string) []string {
 	f, err := os.Open(filePath)

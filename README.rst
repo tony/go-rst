@@ -18,6 +18,7 @@ Implementation
     (`svn <http://sourceforge.net/p/docutils/code/HEAD/tree/trunk/docutils/docutils/statemachine.py>`__)
 
   - `docutils/parsers/rst/states.py <http://repo.or.cz/docutils.git/blob/HEAD:/docutils/docutils/parsers/rst/states.py>`_
+    (`svn <http://sourceforge.net/p/docutils/code/HEAD/tree/trunk/docutils/docutils/parsers/rst/states.py>`__)
 
 
 UNLICENSE
@@ -39,6 +40,11 @@ References
 
        `Golang concepts from an OOP point of view - GitHub <https://github.com/luciotato/golang-notes/blob/master/OOP.md>`_
 
+.. [5] `golang reflect example <https://www.google.com/search?q=golang+reflect+example>`_
+
+       `python reflection class name <https://www.google.com/search?q=python+reflection+class+name>`_
+
+       `introspection - Getting the class name of an instance in Python - Stack Overflow <http://stackoverflow.com/questions/510972/getting-the-class-name-of-an-instance-in-python>`_
 
 .. _Go: https://golang.org/
 .. _Golang: https://golang.org/
