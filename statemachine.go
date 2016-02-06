@@ -3,6 +3,9 @@ package rst
 /*
 Implementation of State Machine in Python docutils
 
+URL of Python source code:
+http://sourceforge.net/p/docutils/code/HEAD/tree/trunk/docutils/docutils/statemachine.py
+
 Functions:
 
 - `File2lines()`: split file content into a list of one-line strings
@@ -12,6 +15,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"reflect"
 )
 
 /*
@@ -109,7 +113,7 @@ type State struct {
 	//
 	// If left as ``None``, `nested_sm` defaults to the class of the state's
 	// controlling state machine. Override it in subclasses to avoid the default.
-	nestedSm StateMachine
+	nestedSm reflect.Type
 
 	// Keyword arguments dictionary, passed to the `nested_sm` constructor.
 	//
@@ -122,7 +126,7 @@ type State struct {
 	// class of the current state, and 'initial_state' defaults to the name of
 	// the class of the current state. Override in subclasses to avoid the
 	// defaults.
-	nestedSmKwargs map[string]string
+	nestedSmKwargs *SmKwargs
 
 	// Debugging mode on/off.
 	debug bool
@@ -138,7 +142,7 @@ type State struct {
 	transitions map[string]Transition
 
 	// A reference to the controlling `StateMachine` object.
-	stateMachine StateMachine
+	stateMachine *StateMachine
 }
 
 /*
@@ -149,19 +153,31 @@ type State struct {
    - `statemachine`: the controlling `StateMachine` object.
    - `debug`: a boolean; produce verbose output if true.
 */
-func (s *State) Init(sm StateMachine, debug bool) {
+func (s *State) Init(sm *StateMachine, debug bool) {
 	s.addInitialTransitions()
 
 	s.stateMachine = sm
 	s.debug = debug
 
-	/*
-	   if self.nested_sm is None:
-	       self.nested_sm = self.state_machine.__class__
-	   if self.nested_sm_kwargs is None:
-	       self.nested_sm_kwargs = {'state_classes': [self.__class__],
-	                                'initial_state': self.__class__.__name__}
-	*/
+	if s.nestedSm == nil {
+		s.nestedSm = reflect.TypeOf(s.stateMachine)
+	}
+	if s.nestedSmKwargs == nil {
+		s.nestedSmKwargs = &SmKwargs{
+			stateClasses: []reflect.Type{reflect.TypeOf(s)},
+			initialState: reflect.TypeOf(s).Name(),
+		}
+	}
+}
+
+// Initialize this `State` before running the state machine; called from
+// `self.stateMachine.run()`.
+func (s *State) runtimeInit() {
+}
+
+// Remove circular references to objects no longer required.
+func (s *State) unlink() {
+	s.stateMachine = nil
 }
 
 // Make and add transitions listed in `self.initial_transitions`.
@@ -191,9 +207,8 @@ func (s *State) addTransitions(names []string, transitions map[string]Transition
 			panic("UnknownTransitionError: " + name)
 		}
 	}
-	/*
-	   self.transition_order[:0] = names
-	*/
+
+	s.transitionOrder = append(names, s.transitionOrder...)
 	for name, transition := range transitions {
 		s.transitions[name] = transition
 	}
@@ -203,6 +218,11 @@ type Transition struct {
 	compiledPattern  string
 	transitionMethod func()
 	nextStateName    string
+}
+
+type SmKwargs struct {
+	stateClasses []reflect.Type
+	initialState string
 }
 
 func File2lines(filePath string) []string {

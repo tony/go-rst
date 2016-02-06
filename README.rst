@@ -13,6 +13,7 @@ Implementation
 - `reStructuredText Markup Specification <http://docutils.sourceforge.net/docs/ref/rst/restructuredtext.html>`_
 
 - `Public Git Hosting - docutils.git/summary <http://repo.or.cz/w/docutils.git>`_
+  (`svn <http://sourceforge.net/p/docutils/code/HEAD/tree/trunk/docutils/>`__)
 
   - `docutils/statemachine.py <http://repo.or.cz/docutils.git/blob/HEAD:/docutils/docutils/statemachine.py>`_
     (`svn <http://sourceforge.net/p/docutils/code/HEAD/tree/trunk/docutils/docutils/statemachine.py>`__)
@@ -45,6 +46,10 @@ References
        `python reflection class name <https://www.google.com/search?q=python+reflection+class+name>`_
 
        `introspection - Getting the class name of an instance in Python - Stack Overflow <http://stackoverflow.com/questions/510972/getting-the-class-name-of-an-instance-in-python>`_
+
+.. [6] `golang append two slices <https://www.google.com/search?q=golang+append+two+slices>`_
+
+       `Concatenate two slices in Go - Stack Overflow <http://stackoverflow.com/questions/16248241/concatenate-two-slices-in-go>`_
 
 .. _Go: https://golang.org/
 .. _Golang: https://golang.org/
