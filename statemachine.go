@@ -183,8 +183,8 @@ func (s *State) unlink() {
 // Make and add transitions listed in `self.initial_transitions`.
 func (s *State) addInitialTransitions() {
 	if len(s.initialTransitions) > 0 {
-		//names, transitions := s.makeTransitions(s.initialTransitions)
-		//s.addTransitions(names, transitions)
+		names, transitions := s.makeTransitions(s.initialTransitions)
+		s.addTransitions(names, transitions)
 	}
 }
 
@@ -211,6 +211,41 @@ func (s *State) addTransitions(names []string, transitions map[string]Transition
 	s.transitionOrder = append(names, s.transitionOrder...)
 	for name, transition := range transitions {
 		s.transitions[name] = transition
+	}
+}
+
+/*
+   Add a transition to the start of the transition list.
+
+   Parameter `transition`: a ready-made transition 3-tuple.
+
+   Exception: `DuplicateTransitionError`.
+*/
+func (s *State) addTransition(name string, transition Transition) {
+	if _, ok := s.transitions[name]; ok {
+		panic("DuplicateTransitionError: " + name)
+	}
+	s.transitionOrder = append([]string{name}, s.transitionOrder...)
+	s.transitions[name] = transition
+}
+
+/*
+   Remove a transition by `name`.
+
+   Exception: `UnknownTransitionError`.
+*/
+func (s *State) removeTransition(name string) {
+	if _, ok := s.transitions[name]; ok {
+		delete(s.transitions, name)
+		for i, n := range s.transitionOrder {
+			if n == name {
+				s.transitionOrder = append(s.transitionOrder[:i], s.transitionOrder[i+1:]...)
+				break
+			}
+		}
+
+	} else {
+		panic("UnknownTransitionError: " + name)
 	}
 }
 

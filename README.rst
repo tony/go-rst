@@ -51,6 +51,16 @@ References
 
        `Concatenate two slices in Go - Stack Overflow <http://stackoverflow.com/questions/16248241/concatenate-two-slices-in-go>`_
 
+.. [7] `golang delete key from map <https://www.google.com/search?q=golang+delete+key+from+map>`_
+
+       `Go maps in action - The Go Blog <https://blog.golang.org/go-maps-in-action>`_
+
+.. [8] `golang remove item from slice <https://www.google.com/search?q=golang+remove+item+from+slice>`_
+
+       `golang delete from slice while iterating <https://www.google.com/search?q=golang+delete+from+slice+while+iterating>`_
+
+       `How to remove element of struct array in loop in golang - Stack Overflow <http://stackoverflow.com/questions/29005825/how-to-remove-element-of-struct-array-in-loop-in-golang>`_
+
 .. _Go: https://golang.org/
 .. _Golang: https://golang.org/
 .. _Ubuntu 15.10: http://releases.ubuntu.com/15.10/
