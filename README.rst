@@ -18,6 +18,9 @@ Implementation
   - `docutils/statemachine.py <http://repo.or.cz/docutils.git/blob/HEAD:/docutils/docutils/statemachine.py>`_
     (`svn <http://sourceforge.net/p/docutils/code/HEAD/tree/trunk/docutils/docutils/statemachine.py>`__)
 
+  - `docutils/nodes.py <http://repo.or.cz/docutils.git/blob/HEAD:/docutils/docutils/nodes.py>`_
+    (`svn <http://sourceforge.net/p/docutils/code/HEAD/tree/trunk/docutils/docutils/nodes.py>`__)
+
   - `docutils/parsers/rst/states.py <http://repo.or.cz/docutils.git/blob/HEAD:/docutils/docutils/parsers/rst/states.py>`_
     (`svn <http://sourceforge.net/p/docutils/code/HEAD/tree/trunk/docutils/docutils/parsers/rst/states.py>`__)
 

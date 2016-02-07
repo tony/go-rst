@@ -552,6 +552,14 @@ func (v *ViewList) SetItemsSlice(start, stop int, items ViewList) {
 	}
 }
 
+func (v *ViewList) DeleteItem(index int) {
+	v.data = append(v.data[:index], v.data[index+1:]...)
+	v.items = append(v.items[:index], v.items[index+1:]...)
+	if v.parent != nil {
+		v.parent.DeleteItem(index + v.parentOffset)
+	}
+}
+
 func File2lines(filePath string) []string {
 	f, err := os.Open(filePath)
 	if err != nil {
