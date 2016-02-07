@@ -295,6 +295,53 @@ func (s *State) makeTransitions(pairs []TransitionNameAndNextState) (names []str
 	return
 }
 
+/*
+   Called when there is no match from `StateMachine.check_line()`.
+
+   Return the same values returned by transition methods:
+
+   - context: unchanged;
+   - next state name: "";
+   - empty result list.
+
+   Override in subclasses to catch this event.
+*/
+func (s *State) noMatch(context Context, transitions map[string]Transition) (Context, string, []string) {
+	return context, "", nil
+}
+
+/*
+   Handle beginning-of-file. Return unchanged `context`, empty result.
+
+   Override in subclasses.
+
+   Parameter `context`: application-defined storage.
+*/
+func (s *State) bof(context Context) (Context, []string) {
+	return context, nil
+}
+
+/*
+   Handle end-of-file. Return empty result.
+
+   Override in subclasses.
+
+   Parameter `context`: application-defined storage.
+*/
+func (s *State) eof(context Context) []string {
+	return nil
+}
+
+/*
+   A "do nothing" transition method.
+
+   Return unchanged `context` & `next_state`, empty result. Useful for
+   simple state changes (actionless transitions).
+*/
+func (s *State) nop(match []string, context Context, nextState string) (Context, string, []string) {
+	return context, nextState, nil
+}
+
 type Transition struct {
 	compiledPattern  *regexp.Regexp
 	transitionMethod reflect.Value
@@ -310,6 +357,8 @@ type SmKwargs struct {
 	stateClasses []reflect.Type
 	initialState string
 }
+
+type Context string
 
 func File2lines(filePath string) []string {
 	f, err := os.Open(filePath)
