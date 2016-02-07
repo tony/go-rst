@@ -61,6 +61,24 @@ References
 
        `How to remove element of struct array in loop in golang - Stack Overflow <http://stackoverflow.com/questions/29005825/how-to-remove-element-of-struct-array-in-loop-in-golang>`_
 
+.. [9] `golang type check <https://www.google.com/search?q=golang+type+check>`_
+
+       `golang type keyword <https://www.google.com/search?q=golang+type+keyword>`_
+
+       `go - What does the keyword type mean when used in a switch? - Stack Overflow <http://stackoverflow.com/questions/22036076/what-does-the-keyword-type-mean-when-used-in-a-switch>`_
+
+       `go - How to find a type of a object in golang? - Stack Overflow <http://stackoverflow.com/questions/20170275/how-to-find-a-type-of-a-object-in-golang>`_
+
+       `How to check variable type at runtime in Go language - Stack Overflow <http://stackoverflow.com/questions/6996704/how-to-check-variable-type-at-runtime-in-go-language>`_
+
+.. [10] `golang regular expression <https://www.google.com/search?q=golang+regular+expression>`_
+
+        `regexp - The Go Programming Language <https://golang.org/pkg/regexp/>`_
+
+.. [11] `python getattr golang <https://www.google.com/search?q=python+getattr+golang>`_
+
+        `how do you spell getattr? - Google Groups <https://groups.google.com/d/topic/golang-nuts/jgC1ElDw4kM>`_
+
 .. _Go: https://golang.org/
 .. _Golang: https://golang.org/
 .. _Ubuntu 15.10: http://releases.ubuntu.com/15.10/

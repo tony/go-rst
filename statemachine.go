@@ -16,6 +16,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"regexp"
 )
 
 /*
@@ -53,7 +54,7 @@ type StateMachine struct {
 	currentState string
 
 	// Mapping of {state_name: State_object}.
-	states map[string]State
+	states map[string]*State
 
 	// List of bound methods or functions to call whenever the current
 	// line changes.  Observers are called with one argument, ``self``.
@@ -80,7 +81,7 @@ type StateMachine struct {
    Transition methods all return a 3-tuple:
 
    - A context object, as (potentially) modified by the transition method.
-   - The next state name (a return value of ``None`` means no state change).
+   - The next state name (a return value of "" means no state change).
    - The processing result, a list, which is accumulated by the state
      machine.
 
@@ -102,16 +103,16 @@ type StateMachine struct {
 type State struct {
 	// {Name: pattern} mapping, used by `make_transition()`. Each pattern may
 	// be a string or a compiled `re` pattern. Override in subclasses.
-	patterns map[string]string
+	patterns map[string]*regexp.Regexp
 
 	// A list of transitions to initialize when a `State` is instantiated.
-	// Each entry is either a transition name string, or a (transition name, next
-	// state name) pair. See `make_transitions()`. Override in subclasses.
-	initialTransitions []Transition
+	// Each entry is a (transition name, next state name) pair. See
+	// `make_transitions()`. Override in subclasses.
+	initialTransitions []TransitionNameAndNextState
 
 	// The `StateMachine` class for handling nested processing.
 	//
-	// If left as ``None``, `nested_sm` defaults to the class of the state's
+	// If left as nil, `nested_sm` defaults to the class of the state's
 	// controlling state machine. Override it in subclasses to avoid the default.
 	nestedSm reflect.Type
 
@@ -122,7 +123,7 @@ type State struct {
 	// - Key 'state_classes' must be set to a list of `State` classes.
 	// - Key 'initial_state' must be set to the name of the initial state class.
 	//
-	// If `nested_sm_kwargs` is left as ``None``, 'state_classes' defaults to the
+	// If `nested_sm_kwargs` is left as nil, 'state_classes' defaults to the
 	// class of the current state, and 'initial_state' defaults to the name of
 	// the class of the current state. Override in subclasses to avoid the
 	// defaults.
@@ -249,10 +250,60 @@ func (s *State) removeTransition(name string) {
 	}
 }
 
+/*
+   Make & return a transition tuple based on `name`.
+
+   This is a convenience function to simplify transition creation.
+
+   Parameters:
+
+   - `name`: a string, the name of the transition pattern & method. This
+     `State` object must have a method called '`name`', and a dictionary
+     `self.patterns` containing a key '`name`'.
+   - `next_state`: a string, the name of the next `State` object for this
+     transition. A value of "" (empty string) implies no state change
+     (i.e., continue with the same state).
+
+   Exceptions: `TransitionPatternNotFound`, `TransitionMethodNotFound`.
+*/
+func (s *State) makeTransition(name, nextState string) Transition {
+	if nextState == "" {
+		nextState = reflect.TypeOf(s).Name()
+	}
+
+	pattern, ok := s.patterns[name]
+	if !ok {
+		panic("TransitionPatternNotFound: " + name + " not in " + reflect.TypeOf(s).Name())
+	}
+
+	method := reflect.New(reflect.TypeOf(s)).FieldByName(name)
+
+	return Transition{pattern, method, nextState}
+}
+
+/*
+   Return a list of transition names and a transition mapping.
+
+   Parameter `pairs`: a list, where each entry is a 2-tuple (transition name,
+   next state name).
+*/
+func (s *State) makeTransitions(pairs []TransitionNameAndNextState) (names []string, transitions map[string]Transition) {
+	for _, pair := range pairs {
+		transitions[pair.name] = s.makeTransition(pair.name, pair.nextState)
+		names = append(names, pair.name)
+	}
+	return
+}
+
 type Transition struct {
-	compiledPattern  string
-	transitionMethod func()
+	compiledPattern  *regexp.Regexp
+	transitionMethod reflect.Value
 	nextStateName    string
+}
+
+type TransitionNameAndNextState struct {
+	name      string
+	nextState string
 }
 
 type SmKwargs struct {
