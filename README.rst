@@ -79,6 +79,10 @@ References
 
         `how do you spell getattr? - Google Groups <https://groups.google.com/d/topic/golang-nuts/jgC1ElDw4kM>`_
 
+.. [12] `golang zero value <https://www.google.com/search?q=golang+zero+value>`_
+
+        `The zero value <https://golang.org/ref/spec#The_zero_value>`_ - `The Go Programming Language Specification <https://golang.org/ref/spec>`_
+
 .. _Go: https://golang.org/
 .. _Golang: https://golang.org/
 .. _Ubuntu 15.10: http://releases.ubuntu.com/15.10/

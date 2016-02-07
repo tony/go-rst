@@ -63,6 +63,60 @@ type StateMachine struct {
 }
 
 /*
+   Initialize a `StateMachine` object; add state objects.
+
+   Parameters:
+
+   - `state_classes`: a list of `State` (sub)classes.
+   - `initial_state`: a string, the class name of the initial state.
+   - `debug`: a boolean; produce verbose output if true (nonzero).
+*/
+func (s *StateMachine) Init(stateClasses []*State, initialState string, debug bool) {
+	s.lineOffset = -1
+	s.debug = debug
+	s.initialState = initialState
+	s.currentState = initialState
+	s.addStates(stateClasses)
+}
+
+// Remove circular references to objects no longer required.
+func (s *StateMachine) unlink() {
+	for _, state := range s.states {
+		state.unlink()
+	}
+	s.states = nil
+}
+
+/*
+   Initialize & add a `state_class` (`State` subclass) object.
+
+   Exception: `DuplicateStateError` raised if `state_class` was already
+   added.
+*/
+func (s *StateMachine) addState(stateClass *State) {
+	statename := reflect.TypeOf(stateClass).Name()
+	if _, ok := s.states[statename]; ok {
+		panic("DuplicateStateError: " + statename)
+	}
+	stateClass.Init(s, s.debug)
+	s.states[statename] = stateClass
+}
+
+// Add `state_classes` (a list of `State` subclasses).
+func (s *StateMachine) addStates(stateClasses []*State) {
+	for _, stateClass := range stateClasses {
+		s.addState(stateClass)
+	}
+}
+
+// Initialize `self.states`.
+func (s *StateMachine) runtimeInit() {
+	for _, state := range s.states {
+		state.runtimeInit()
+	}
+}
+
+/*
    State superclass. Contains a list of transitions, and transition methods.
 
    Transition methods all have the same signature. They take 3 parameters:
