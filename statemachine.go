@@ -585,7 +585,7 @@ func (v *ViewList) Radd(other ViewList) ViewList {
 }
 
 // Remove items from the start of the list, without touching the parent.
-func (v *ViewList) trimStart(n int) {
+func (v *ViewList) TrimStart(n int) {
 	if n > len(v.data) {
 		panic("Size of trim too large;")
 	}
@@ -600,7 +600,7 @@ func (v *ViewList) trimStart(n int) {
 }
 
 // Remove items from the end of the list, without touching the parent.
-func (v *ViewList) trimEnd(n int) {
+func (v *ViewList) TrimEnd(n int) {
 	if n > len(v.data) {
 		panic("Size of trim too large;")
 	}
@@ -608,7 +608,7 @@ func (v *ViewList) trimEnd(n int) {
 		panic("Trim size must be >= 0.")
 	}
 	v.data = v.data[:len(v.data)-n]
-	v.items = v.items[:len(v.data)-n]
+	v.items = v.items[:len(v.items)-n]
 }
 
 // Return source & offset for index `i`.
