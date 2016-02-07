@@ -88,6 +88,49 @@ func (s *StateMachine) unlink() {
 }
 
 /*
+   Run the state machine on `input_lines`. Return results (a list).
+
+   Reset `self.line_offset` and `self.current_state`. Run the
+   beginning-of-file transition. Input one line at a time and check for a
+   matching transition. If a match is found, call the transition method
+   and possibly change the state. Store the context returned by the
+   transition method to be passed on to the next transition matched.
+   Accumulate the results returned by the transition methods in a list.
+   Run the end-of-file transition. Finally, return the accumulated
+   results.
+
+   Parameters:
+
+   - `input_lines`: a list of strings without newlines, or `StringList`.
+   - `input_offset`: the line offset of `input_lines` from the beginning
+     of the file.
+   - `context`: application-specific storage.
+   - `input_source`: name or path of source of `input_lines`.
+   - `initial_state`: name of initial state.
+*/
+func (s *StateMachine) run(inputLines []string, inputOffset int, context Context, inputSource, initialState string) {
+	s.runtimeInit()
+
+	// convert to StringList?
+	s.inputLines = inputLines
+
+	s.inputOffset = inputOffset
+	s.lineOffset = -1
+	if initialState == "" {
+		s.currentState = s.initialState
+	} else {
+		s.currentState = initialState
+	}
+
+	if s.debug {
+		fmt.Println("\nStateMachine.run: input_lines (line_offset=%d)", s.lineOffset)
+		for _, line := range s.inputLines {
+			fmt.Println(line)
+		}
+	}
+}
+
+/*
    Initialize & add a `state_class` (`State` subclass) object.
 
    Exception: `DuplicateStateError` raised if `state_class` was already
@@ -413,6 +456,101 @@ type SmKwargs struct {
 }
 
 type Context string
+
+type ViewListItem struct {
+	source string
+	offset int
+}
+
+/*
+   List with extended functionality: slices of ViewList objects are child
+   lists, linked to their parents. Changes made to a child list also affect
+   the parent list.  A child list is effectively a "view" (in the SQL sense)
+   of the parent list.  Changes to parent lists, however, do *not* affect
+   active child lists.  If a parent list is changed, any active child lists
+   should be recreated.
+
+   The start and end of the slice can be trimmed using the `trim_start()` and
+   `trim_end()` methods, without affecting the parent list.  The link between
+   child and parent lists can be broken by calling `disconnect()` on the
+   child list.
+
+   Also, ViewList objects keep track of the source & offset of each item.
+   This information is accessible via the `source()`, `offset()`, and
+   `info()` methods.
+*/
+type ViewList struct {
+	//The actual list of data, flattened from various sources.
+	data []string
+
+	// A list of (source, offset) pairs, same length as `self.data`: the
+	// source of each line and the offset of each line from the beginning of
+	// its source.
+	items []ViewListItem
+
+	// The parent list.
+	parent *ViewList
+
+	// Offset of this list from the beginning of the parent list.
+	parentOffset int
+}
+
+func (v *ViewList) Init(initlist []string, source string, items []ViewListItem, parent *ViewList, parentOffset int) {
+	v.parent = parent
+	v.parentOffset = parentOffset
+	v.data = initlist
+	if items == nil {
+		for i, _ := range initlist {
+			v.items = append(v.items, ViewListItem{source, i})
+		}
+	} else {
+		v.items = items
+	}
+	if len(v.data) != len(v.items) {
+		panic("data mismatch")
+	}
+}
+
+func (v *ViewList) Contains(item string) bool {
+	for _, d := range v.data {
+		if d == item {
+			return true
+		}
+	}
+	return false
+}
+
+func (v *ViewList) Length() int {
+	return len(v.data)
+}
+
+func (v *ViewList) GetItem(index int) string {
+	return v.data[index]
+}
+
+func (v *ViewList) GetItemsSlice(start, stop int) ViewList {
+	vl := ViewList{}
+	vl.Init(v.data[start:stop], "", v.items, v, start)
+	return vl
+}
+
+func (v *ViewList) SetItem(index int, item string) {
+	v.data[index] = item
+	if v.parent != nil {
+		v.parent.SetItem(index+v.parentOffset, item)
+	}
+}
+
+func (v *ViewList) SetItemsSlice(start, stop int, items ViewList) {
+	for i := start; i < stop; i++ {
+		v.data[i] = items.data[i]
+		v.items[i] = items.items[i]
+	}
+
+	if v.parent != nil {
+		v.parent.SetItemsSlice(start+v.parentOffset, stop+v.parentOffset, items)
+	}
+}
 
 func File2lines(filePath string) []string {
 	f, err := os.Open(filePath)

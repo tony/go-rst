@@ -89,3 +89,4 @@ References
 .. _Go 1.5.3: https://golang.org/dl/
 .. _reStructuredText: http://docutils.sourceforge.net/rst.html
 .. _HTML: https://www.google.com/search?q=HTML
+.. _UNLICENSE: http://unlicense.org/
