@@ -560,6 +560,85 @@ func (v *ViewList) DeleteItem(index int) {
 	}
 }
 
+func (v *ViewList) DeleteItemsSlice(start, stop int) {
+	v.data = append(v.data[:start], v.data[stop:]...)
+	v.items = append(v.items[:start], v.items[stop:]...)
+	if v.parent != nil {
+		v.parent.DeleteItemsSlice(start+v.parentOffset, stop+v.parentOffset)
+	}
+}
+
+func (v *ViewList) Add(other ViewList) ViewList {
+	data := append(v.data, other.data...)
+	items := append(v.items, other.items...)
+	result := ViewList{}
+	result.Init(data, "", items, nil, 0)
+	return result
+}
+
+func (v *ViewList) Radd(other ViewList) ViewList {
+	data := append(other.data, v.data...)
+	items := append(other.items, v.items...)
+	result := ViewList{}
+	result.Init(data, "", items, nil, 0)
+	return result
+}
+
+// Remove items from the start of the list, without touching the parent.
+func (v *ViewList) trimStart(n int) {
+	if n > len(v.data) {
+		panic("Size of trim too large;")
+	}
+	if n < 0 {
+		panic("Trim size must be >= 0.")
+	}
+	v.data = v.data[n:]
+	v.items = v.items[n:]
+	if v.parent != nil {
+		v.parentOffset += n
+	}
+}
+
+// Remove items from the end of the list, without touching the parent.
+func (v *ViewList) trimEnd(n int) {
+	if n > len(v.data) {
+		panic("Size of trim too large;")
+	}
+	if n < 0 {
+		panic("Trim size must be >= 0.")
+	}
+	v.data = v.data[:len(v.data)-n]
+	v.items = v.items[:len(v.data)-n]
+}
+
+// Return source & offset for index `i`.
+func (v *ViewList) Info(i int) ViewListItem {
+	if i < len(v.items) {
+		return v.items[i]
+	} else {
+		if i == len(v.data) { // Just past the end
+			return ViewListItem{v.items[i-1].source, -1}
+		} else {
+			panic("IndexError")
+		}
+	}
+}
+
+// Return source for index `i`.
+func (v *ViewList) Source(i int) string {
+	return v.Info(i).source
+}
+
+// Return offset for index `i`.
+func (v *ViewList) Offset(i int) int {
+	return v.Info(i).offset
+}
+
+// Break link between this list and parent list.
+func (v *ViewList) Disconnect(i int) {
+	v.parent = nil
+}
+
 func File2lines(filePath string) []string {
 	f, err := os.Open(filePath)
 	if err != nil {
