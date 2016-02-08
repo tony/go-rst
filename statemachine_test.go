@@ -57,6 +57,13 @@ func TestViewList(t *testing.T) {
 	if buf.String() != "{[c e] [{s 2} {s 4}] <nil> 0}" {
 		t.Error("TrimEnd(3) failed")
 	}
+
+	v.Pop(1)
+	buf.Reset()
+	fmt.Fprint(&buf, v)
+	if buf.String() != "{[c] [{s 2}] <nil> 0}" {
+		t.Error("Pop(1) failed")
+	}
 }
 
 func TestStringList(t *testing.T) {
@@ -76,5 +83,13 @@ func TestStringList(t *testing.T) {
 	fmt.Fprint(&buf, s)
 	if buf.String() != "{{[c b c d e f g h] [{t 0} {t 1} {t 2} {t 3} {t 4} {t 5} {t 6} {t 7}] <nil> 0}}" {
 		t.Error("TrimEnd(2, 0, 1) failed")
+	}
+
+	s.Replace("c", "aa")
+	s.Replace("b", "c")
+	buf.Reset()
+	fmt.Fprint(&buf, s)
+	if buf.String() != "{{[aa c aa d e f g h] [{t 0} {t 1} {t 2} {t 3} {t 4} {t 5} {t 6} {t 7}] <nil> 0}}" {
+		t.Error("Repalace(\"c\", \"aa\") failed")
 	}
 }

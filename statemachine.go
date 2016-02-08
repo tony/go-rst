@@ -585,6 +585,17 @@ func (v *ViewList) Radd(other ViewList) ViewList {
 	return result
 }
 
+func (v *ViewList) Pop(i int) string {
+	if v.parent != nil {
+		index := (len(v.data) + i) % len(v.data)
+		v.parent.Pop(index + v.parentOffset)
+	}
+	v.items = append(v.items[:i], v.items[i+1:]...)
+	result := v.data[i]
+	v.data = append(v.data[:i], v.data[i+1:]...)
+	return result
+}
+
 // Remove items from the start of the list, without touching the parent.
 func (v *ViewList) TrimStart(n int) {
 	if n > len(v.data) {
@@ -679,6 +690,13 @@ func (s *StringList) GetTextBlock(start int, flushLeft bool) StringList {
 	result := StringList{}
 	result.Init(s.data[start:end], "", s.items[start:end], s.parent, s.parentOffset)
 	return result
+}
+
+// Replace all occurrences of substring `oldStr` with `newStr`.
+func (s *StringList) Replace(oldStr, newStr string) {
+	for i, line := range s.data {
+		s.data[i] = strings.Replace(line, oldStr, newStr, -1)
+	}
 }
 
 func File2lines(filePath string) []string {
