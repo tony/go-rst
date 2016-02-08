@@ -58,3 +58,23 @@ func TestViewList(t *testing.T) {
 		t.Error("TrimEnd(3) failed")
 	}
 }
+
+func TestStringList(t *testing.T) {
+	var buf bytes.Buffer
+
+	// init StringList
+	data := []string{"abc", "b", "c", "d", "e", "f", "g", "h"}
+	s := StringList{}
+	s.Init(data, "t", nil, nil, 0)
+	fmt.Fprint(&buf, s)
+	if buf.String() != "{{[abc b c d e f g h] [{t 0} {t 1} {t 2} {t 3} {t 4} {t 5} {t 6} {t 7}] <nil> 0}}" {
+		t.Error("Init StringList failed")
+	}
+
+	s.TrimLeft(2, 0, 1)
+	buf.Reset()
+	fmt.Fprint(&buf, s)
+	if buf.String() != "{{[c b c d e f g h] [{t 0} {t 1} {t 2} {t 3} {t 4} {t 5} {t 6} {t 7}] <nil> 0}}" {
+		t.Error("TrimEnd(2, 0, 1) failed")
+	}
+}

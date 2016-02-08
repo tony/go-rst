@@ -17,6 +17,7 @@ import (
 	"os"
 	"reflect"
 	"regexp"
+	"strings"
 )
 
 /*
@@ -637,6 +638,47 @@ func (v *ViewList) Offset(i int) int {
 // Break link between this list and parent list.
 func (v *ViewList) Disconnect(i int) {
 	v.parent = nil
+}
+
+// A `ViewList` with string-specific methods.
+type StringList struct {
+	ViewList
+}
+
+/*
+   Trim `length` characters off the beginning of each item, in-place,
+   from index `start` to `end`.  No whitespace-checking is done on the
+   trimmed text.  Does not affect slice parent.
+*/
+func (s *StringList) TrimLeft(length, start, end int) {
+	for i := start; i < end; i++ {
+		s.data[i] = s.data[i][length:]
+	}
+}
+
+/*
+   Return a contiguous block of text.
+
+   If `flush_left` is true, raise `UnexpectedIndentationError` if an
+   indented line is encountered before the text block ends (with a blank
+   line).
+*/
+func (s *StringList) GetTextBlock(start int, flushLeft bool) StringList {
+	end := start
+	last := len(s.data)
+	for end < last {
+		line := s.data[end]
+		if strings.TrimSpace(line) != "" {
+			break
+		}
+		if flushLeft && line[0] == ' ' {
+			panic("UnexpectedIndentationError")
+		}
+		end += 1
+	}
+	result := StringList{}
+	result.Init(s.data[start:end], "", s.items[start:end], s.parent, s.parentOffset)
+	return result
 }
 
 func File2lines(filePath string) []string {
