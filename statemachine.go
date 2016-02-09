@@ -211,9 +211,12 @@ func (s *StateMachine) runtimeInit() {
 
 func (s *StateMachine) notifyObservers() {
 	for _, observer := range s.observers {
-		info := s.inputLines.Info(s.lineOffset)
-		// FIXME: handle IndexError panic here
-		observer(info.source, info.offset)
+		info, err := s.inputLines.Info(s.lineOffset)
+		if err == nil {
+			observer(info.source, info.offset)
+		} else {
+			observer("", -1)
+		}
 	}
 }
 
@@ -702,53 +705,57 @@ func (v *ViewList) Pop(i int) string {
 }
 
 // Remove items from the start of the list, without touching the parent.
-func (v *ViewList) TrimStart(n int) {
+func (v *ViewList) TrimStart(n int) error {
 	if n > len(v.data) {
-		panic("Size of trim too large;")
+		return &IndexError{"Size of trim too large;"}
 	}
 	if n < 0 {
-		panic("Trim size must be >= 0.")
+		return &IndexError{"Trim size must be >= 0."}
 	}
 	v.data = v.data[n:]
 	v.items = v.items[n:]
 	if v.parent != nil {
 		v.parentOffset += n
 	}
+	return nil
 }
 
 // Remove items from the end of the list, without touching the parent.
-func (v *ViewList) TrimEnd(n int) {
+func (v *ViewList) TrimEnd(n int) error {
 	if n > len(v.data) {
-		panic("Size of trim too large;")
+		return &IndexError{"Size of trim too large;"}
 	}
 	if n < 0 {
-		panic("Trim size must be >= 0.")
+		return &IndexError{"Trim size must be >= 0."}
 	}
 	v.data = v.data[:len(v.data)-n]
 	v.items = v.items[:len(v.items)-n]
+	return nil
 }
 
 // Return source & offset for index `i`.
-func (v *ViewList) Info(i int) ViewListItem {
+func (v *ViewList) Info(i int) (ViewListItem, error) {
 	if i < len(v.items) {
-		return v.items[i]
+		return v.items[i], nil
 	} else {
 		if i == len(v.data) { // Just past the end
-			return ViewListItem{v.items[i-1].source, -1}
+			return ViewListItem{v.items[i-1].source, -1}, nil
 		} else {
-			panic("IndexError")
+			return ViewListItem{}, &IndexError{"ViewList Info IndexError"}
 		}
 	}
 }
 
 // Return source for index `i`.
-func (v *ViewList) Source(i int) string {
-	return v.Info(i).source
+func (v *ViewList) Source(i int) (string, error) {
+	info, err := v.Info(i)
+	return info.source, err
 }
 
 // Return offset for index `i`.
-func (v *ViewList) Offset(i int) int {
-	return v.Info(i).offset
+func (v *ViewList) Offset(i int) (int, error) {
+	info, err := v.Info(i)
+	return info.offset, err
 }
 
 // Break link between this list and parent list.
@@ -821,4 +828,12 @@ func File2lines(filePath string) []string {
 	}
 
 	return lines
+}
+
+type IndexError struct {
+	msg string
+}
+
+func (ie *IndexError) Error() string {
+	return ie.msg
 }

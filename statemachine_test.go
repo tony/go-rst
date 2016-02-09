@@ -18,16 +18,19 @@ func TestViewList(t *testing.T) {
 
 	// test Info
 	buf.Reset()
-	fmt.Fprint(&buf, v.Info(3))
+	vi3, _ := v.Info(3)
+	fmt.Fprint(&buf, vi3)
 	if buf.String() != "{s 3}" {
 		t.Error("Info at index 3 failed")
 	}
 
-	if v.Source(2) != "s" {
+	src, _ := v.Source(2)
+	if src != "s" {
 		t.Error("Source at index 2 failed")
 	}
 
-	if v.Offset(5) != 5 {
+	oft, _ := v.Offset(5)
+	if oft != 5 {
 		t.Error("Offset at index 5 failed")
 	}
 
