@@ -64,6 +64,25 @@ func TestViewList(t *testing.T) {
 	if buf.String() != "{[c] [{s 2}] <nil> 0}" {
 		t.Error("Pop(1) failed")
 	}
+
+	// test InsertItem
+	v.InsertItem(1, "a", "d", 1)
+	buf.Reset()
+	fmt.Fprint(&buf, v)
+	if buf.String() != "{[c a] [{s 2} {d 1}] <nil> 0}" {
+		t.Error("InsertItem(1, \"a\", \"d\", 1) failed")
+	}
+
+	// test InsertItemsSlice
+	data2 := []string{"i", "j"}
+	v2 := ViewList{}
+	v2.Init(data2, "t", nil, nil, 0)
+	v.InsertItemsSlice(0, v2)
+	buf.Reset()
+	fmt.Fprint(&buf, v)
+	if buf.String() != "{[i j c a] [{t 0} {t 1} {s 2} {d 1}] <nil> 0}" {
+		t.Error("InsertItemsSlice(0, v2) failed")
+	}
 }
 
 func TestStringList(t *testing.T) {

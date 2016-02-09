@@ -585,6 +585,34 @@ func (v *ViewList) Radd(other ViewList) ViewList {
 	return result
 }
 
+func (v *ViewList) InsertItem(i int, item, source string, offset int) {
+	if source == "" {
+		panic("source cannot be empty")
+	}
+
+	v.data = append(v.data, "")
+	copy(v.data[i+1:], v.data[i:])
+	v.data[i] = item
+
+	v.items = append(v.items, ViewListItem{})
+	copy(v.items[i+1:], v.items[i:])
+	v.items[i] = ViewListItem{source, offset}
+
+	if v.parent != nil {
+		index := (len(v.data) + i) % len(v.data)
+		v.parent.InsertItem(index+v.parentOffset, item, source, offset)
+	}
+}
+
+func (v *ViewList) InsertItemsSlice(i int, vl ViewList) {
+	v.data = append(v.data[:i], append(vl.data, v.data[i:]...)...)
+	v.items = append(v.items[:i], append(vl.items, v.items[i:]...)...)
+	if v.parent != nil {
+		index := (len(v.data) + i) % len(v.data)
+		v.parent.InsertItemsSlice(index+v.parentOffset, vl)
+	}
+}
+
 func (v *ViewList) Pop(i int) string {
 	if v.parent != nil {
 		index := (len(v.data) + i) % len(v.data)
