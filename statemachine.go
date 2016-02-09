@@ -166,7 +166,7 @@ func (s *StateMachine) getState(nextState string) (*State, error) {
 }
 
 // Load `self.line` with the `n`'th next line and return it.
-func (s *StateMachine) nextLine(n int) string {
+func (s *StateMachine) nextLine(n int) (string, error) {
 	s.lineOffset += n
 	if s.lineOffset < s.inputLines.Length() {
 		s.line = s.inputLines.GetItem(s.lineOffset)
@@ -174,10 +174,10 @@ func (s *StateMachine) nextLine(n int) string {
 		// IndexError
 		s.line = ""
 		s.notifyObservers()
-		panic("EOFError")
+		return "", &EOFError{"EOFError in StateMachine nextLine"}
 	}
 	s.notifyObservers()
-	return s.line
+	return s.line, nil
 }
 
 /*
@@ -186,13 +186,14 @@ func (s *StateMachine) nextLine(n int) string {
    Exception: `DuplicateStateError` raised if `state_class` was already
    added.
 */
-func (s *StateMachine) addState(stateClass *State) {
+func (s *StateMachine) addState(stateClass *State) error {
 	statename := reflect.TypeOf(stateClass).Name()
 	if _, ok := s.states[statename]; ok {
-		panic("DuplicateStateError: " + statename)
+		return &DuplicateStateError{"DuplicateStateError: " + statename}
 	}
 	stateClass.Init(s, s.debug)
 	s.states[statename] = stateClass
+	return nil
 }
 
 // Add `state_classes` (a list of `State` subclasses).
@@ -357,13 +358,13 @@ func (s *State) addInitialTransitions() {
 
    Exceptions: `DuplicateTransitionError`, `UnknownTransitionError`.
 */
-func (s *State) addTransitions(names []string, transitions map[string]Transition) {
+func (s *State) addTransitions(names []string, transitions map[string]Transition) error {
 	for _, name := range names {
 		if _, ok := s.transitions[name]; ok {
-			panic("DuplicateTransitionError: " + name)
+			return &DuplicateTransitionError{"DuplicateTransitionError: " + name}
 		}
 		if _, ok := transitions[name]; !ok {
-			panic("UnknownTransitionError: " + name)
+			return &UnknownTransitionError{"UnknownTransitionError: " + name}
 		}
 	}
 
@@ -371,6 +372,7 @@ func (s *State) addTransitions(names []string, transitions map[string]Transition
 	for name, transition := range transitions {
 		s.transitions[name] = transition
 	}
+	return nil
 }
 
 /*
@@ -380,12 +382,13 @@ func (s *State) addTransitions(names []string, transitions map[string]Transition
 
    Exception: `DuplicateTransitionError`.
 */
-func (s *State) addTransition(name string, transition Transition) {
+func (s *State) addTransition(name string, transition Transition) error {
 	if _, ok := s.transitions[name]; ok {
-		panic("DuplicateTransitionError: " + name)
+		return &DuplicateTransitionError{"DuplicateTransitionError: " + name}
 	}
 	s.transitionOrder = append([]string{name}, s.transitionOrder...)
 	s.transitions[name] = transition
+	return nil
 }
 
 /*
@@ -393,7 +396,7 @@ func (s *State) addTransition(name string, transition Transition) {
 
    Exception: `UnknownTransitionError`.
 */
-func (s *State) removeTransition(name string) {
+func (s *State) removeTransition(name string) error {
 	if _, ok := s.transitions[name]; ok {
 		delete(s.transitions, name)
 		for i, n := range s.transitionOrder {
@@ -404,8 +407,9 @@ func (s *State) removeTransition(name string) {
 		}
 
 	} else {
-		panic("UnknownTransitionError: " + name)
+		return &UnknownTransitionError{"UnknownTransitionError: " + name}
 	}
+	return nil
 }
 
 /*
@@ -851,5 +855,37 @@ type UnknownStateError struct {
 }
 
 func (e *UnknownStateError) Error() string {
+	return e.msg
+}
+
+type EOFError struct {
+	msg string
+}
+
+func (e *EOFError) Error() string {
+	return e.msg
+}
+
+type DuplicateStateError struct {
+	msg string
+}
+
+func (e *DuplicateStateError) Error() string {
+	return e.msg
+}
+
+type DuplicateTransitionError struct {
+	msg string
+}
+
+func (e *DuplicateTransitionError) Error() string {
+	return e.msg
+}
+
+type UnknownTransitionError struct {
+	msg string
+}
+
+func (e *UnknownTransitionError) Error() string {
 	return e.msg
 }
