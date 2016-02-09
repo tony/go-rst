@@ -34,7 +34,7 @@ import (
 type StateMachine struct {
 	// `StringList` of input lines (without newlines).
 	// Filled by `self.run()`.
-	inputLines []string
+	inputLines StringList
 
 	// Offset of `self.input_lines` from the beginning of the file.
 	inputOffset int
@@ -60,7 +60,7 @@ type StateMachine struct {
 	// List of bound methods or functions to call whenever the current
 	// line changes.  Observers are called with one argument, ``self``.
 	// Cleared at the end of `run()`.
-	observers []func()
+	observers []func(string, int)
 }
 
 /*
@@ -109,10 +109,9 @@ func (s *StateMachine) unlink() {
    - `input_source`: name or path of source of `input_lines`.
    - `initial_state`: name of initial state.
 */
-func (s *StateMachine) run(inputLines []string, inputOffset int, context Context, inputSource, initialState string) {
+func (s *StateMachine) run(inputLines StringList, inputOffset int, context Context, initialState string) {
 	s.runtimeInit()
 
-	// convert to StringList?
 	s.inputLines = inputLines
 
 	s.inputOffset = inputOffset
@@ -125,10 +124,60 @@ func (s *StateMachine) run(inputLines []string, inputOffset int, context Context
 
 	if s.debug {
 		fmt.Println("\nStateMachine.run: input_lines (line_offset=%d)", s.lineOffset)
-		for _, line := range s.inputLines {
+		for _, line := range s.inputLines.data {
 			fmt.Println(line)
 		}
 	}
+
+	//var transitions map[string]Transition
+	var results []string
+	state := s.getState("")
+
+	if s.debug {
+		fmt.Println("\nStateMachine.run: bof transition")
+	}
+	context, result := state.bof(context)
+	results = append(results, result...)
+	for {
+		s.nextLine(1)
+	}
+}
+
+/*
+   Return current state object; set it first if `next_state` given.
+
+   Parameter `next_state`: a string, the name of the next state.
+
+   Exception: `UnknownStateError` raised if `next_state` unknown.
+*/
+func (s *StateMachine) getState(nextState string) *State {
+	if nextState != "" {
+		if s.debug && nextState != s.currentState {
+			fmt.Println("\nStateMachine.get_state: Changing state from %s to %s", s.currentState, nextState)
+		}
+		s.currentState = nextState
+	}
+
+	state, ok := s.states[s.currentState]
+	if !ok {
+		panic("UnknownStateError: " + s.currentState)
+	}
+	return state
+}
+
+// Load `self.line` with the `n`'th next line and return it.
+func (s *StateMachine) nextLine(n int) string {
+	s.lineOffset += n
+	if s.lineOffset < s.inputLines.Length() {
+		s.line = s.inputLines.GetItem(s.lineOffset)
+	} else {
+		// IndexError
+		s.line = ""
+		s.notifyObservers()
+		panic("EOFError")
+	}
+	s.notifyObservers()
+	return s.line
 }
 
 /*
@@ -157,6 +206,14 @@ func (s *StateMachine) addStates(stateClasses []*State) {
 func (s *StateMachine) runtimeInit() {
 	for _, state := range s.states {
 		state.runtimeInit()
+	}
+}
+
+func (s *StateMachine) notifyObservers() {
+	for _, observer := range s.observers {
+		info := s.inputLines.Info(s.lineOffset)
+		// FIXME: handle IndexError panic here
+		observer(info.source, info.offset)
 	}
 }
 
