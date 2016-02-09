@@ -131,7 +131,7 @@ func (s *StateMachine) run(inputLines StringList, inputOffset int, context Conte
 
 	//var transitions map[string]Transition
 	var results []string
-	state := s.getState("")
+	state, _ := s.getState("")
 
 	if s.debug {
 		fmt.Println("\nStateMachine.run: bof transition")
@@ -150,7 +150,7 @@ func (s *StateMachine) run(inputLines StringList, inputOffset int, context Conte
 
    Exception: `UnknownStateError` raised if `next_state` unknown.
 */
-func (s *StateMachine) getState(nextState string) *State {
+func (s *StateMachine) getState(nextState string) (*State, error) {
 	if nextState != "" {
 		if s.debug && nextState != s.currentState {
 			fmt.Println("\nStateMachine.get_state: Changing state from %s to %s", s.currentState, nextState)
@@ -160,9 +160,9 @@ func (s *StateMachine) getState(nextState string) *State {
 
 	state, ok := s.states[s.currentState]
 	if !ok {
-		panic("UnknownStateError: " + s.currentState)
+		return nil, &UnknownStateError{"UnknownStateError: " + s.currentState}
 	}
-	return state
+	return state, nil
 }
 
 // Load `self.line` with the `n`'th next line and return it.
@@ -786,7 +786,7 @@ func (s *StringList) TrimLeft(length, start, end int) {
    indented line is encountered before the text block ends (with a blank
    line).
 */
-func (s *StringList) GetTextBlock(start int, flushLeft bool) StringList {
+func (s *StringList) GetTextBlock(start int, flushLeft bool) (StringList, error) {
 	end := start
 	last := len(s.data)
 	for end < last {
@@ -795,13 +795,13 @@ func (s *StringList) GetTextBlock(start int, flushLeft bool) StringList {
 			break
 		}
 		if flushLeft && line[0] == ' ' {
-			panic("UnexpectedIndentationError")
+			return StringList{}, &UnexpectedIndentationError{"UnexpectedIndentationError StringList GetTextBlock"}
 		}
 		end += 1
 	}
 	result := StringList{}
 	result.Init(s.data[start:end], "", s.items[start:end], s.parent, s.parentOffset)
-	return result
+	return result, nil
 }
 
 // Replace all occurrences of substring `oldStr` with `newStr`.
@@ -834,6 +834,22 @@ type IndexError struct {
 	msg string
 }
 
-func (ie *IndexError) Error() string {
-	return ie.msg
+func (e *IndexError) Error() string {
+	return e.msg
+}
+
+type UnexpectedIndentationError struct {
+	msg string
+}
+
+func (e *UnexpectedIndentationError) Error() string {
+	return e.msg
+}
+
+type UnknownStateError struct {
+	msg string
+}
+
+func (e *UnknownStateError) Error() string {
+	return e.msg
 }
