@@ -83,6 +83,22 @@ func TestViewList(t *testing.T) {
 	if buf.String() != "{[i j c a] [{t 0} {t 1} {s 2} {d 1}] <nil> 0}" {
 		t.Error("InsertItemsSlice(0, v2) failed")
 	}
+
+	// test Extend
+	v.Extend(v2)
+	buf.Reset()
+	fmt.Fprint(&buf, v)
+	if buf.String() != "{[i j c a i j] [{t 0} {t 1} {s 2} {d 1} {t 0} {t 1}] <nil> 0}" {
+		t.Error("Extend(v2) failed")
+	}
+
+	// test AppendItem
+	v.AppendItem("e", "f", 2)
+	buf.Reset()
+	fmt.Fprint(&buf, v)
+	if buf.String() != "{[i j c a i j e] [{t 0} {t 1} {s 2} {d 1} {t 0} {t 1} {f 2}] <nil> 0}" {
+		t.Error("AppendItem(\"e\", \"f\", 2) failed")
+	}
 }
 
 func TestStringList(t *testing.T) {

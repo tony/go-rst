@@ -585,6 +585,26 @@ func (v *ViewList) Radd(other ViewList) ViewList {
 	return result
 }
 
+func (v *ViewList) Extend(other ViewList) {
+	if v.parent != nil {
+		v.parent.InsertItemsSlice(len(v.data)+v.parentOffset, other)
+	}
+	v.data = append(v.data, other.data...)
+	v.items = append(v.items, other.items...)
+}
+
+func (v *ViewList) AppendItem(item, source string, offset int) {
+	if v.parent != nil {
+		v.parent.InsertItem(len(v.data)+v.parentOffset, item, source, offset)
+	}
+	v.data = append(v.data, item)
+	v.items = append(v.items, ViewListItem{source, offset})
+}
+
+func (v *ViewList) AppendItemsSlice(vl ViewList) {
+	v.Extend(vl)
+}
+
 func (v *ViewList) InsertItem(i int, item, source string, offset int) {
 	if source == "" {
 		panic("source cannot be empty")
