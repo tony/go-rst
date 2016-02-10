@@ -50,6 +50,10 @@ References
 
        `introspection - Getting the class name of an instance in Python - Stack Overflow <http://stackoverflow.com/questions/510972/getting-the-class-name-of-an-instance-in-python>`_
 
+       `golang reflect method example <https://www.google.com/search?q=golang+reflect+method+example>`_
+
+       `Call a Struct and its Method by name in Go? - Stack Overflow <http://stackoverflow.com/questions/8103617/call-a-struct-and-its-method-by-name-in-go>`_
+
 .. [6] `golang append two slices <https://www.google.com/search?q=golang+append+two+slices>`_
 
        `Concatenate two slices in Go - Stack Overflow <http://stackoverflow.com/questions/16248241/concatenate-two-slices-in-go>`_
@@ -85,6 +89,11 @@ References
 .. [12] `golang zero value <https://www.google.com/search?q=golang+zero+value>`_
 
         `The zero value <https://golang.org/ref/spec#The_zero_value>`_ - `The Go Programming Language Specification <https://golang.org/ref/spec>`_
+
+.. [13] `exception - Is it a good practice to use try-except-else in Python? - Stack Overflow <http://stackoverflow.com/questions/16138232/is-it-a-good-practice-to-use-try-except-else-in-python>`_
+
+        `exception handling - Python try-else - Stack Overflow <http://stackoverflow.com/questions/855759/python-try-else>`_
+
 
 .. _Go: https://golang.org/
 .. _Golang: https://golang.org/

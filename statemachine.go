@@ -129,7 +129,7 @@ func (s *StateMachine) run(inputLines StringList, inputOffset int, context Conte
 		}
 	}
 
-	//var transitions map[string]Transition
+	var transitions []string
 	var results []string
 	state, _ := s.getState("")
 
@@ -139,7 +139,20 @@ func (s *StateMachine) run(inputLines StringList, inputOffset int, context Conte
 	context, result := state.bof(context)
 	results = append(results, result...)
 	for {
-		s.nextLine(1)
+		_, err := s.nextLine(1)
+		if err == nil {
+			if s.debug {
+				fmt.Println("\nStateMachine.run: line " + s.line)
+			}
+			context, nextState, result := s.checkLine(context, state, transitions)
+		} else {
+			// EOFError
+		}
+
+		// FIXME: implement TransitionCorrection
+
+		// FIXME: implement StateCorrection
+
 	}
 }
 
@@ -178,6 +191,46 @@ func (s *StateMachine) nextLine(n int) (string, error) {
 	}
 	s.notifyObservers()
 	return s.line, nil
+}
+
+/*
+   Examine one line of input for a transition match & execute its method.
+
+   Parameters:
+
+   - `context`: application-dependent storage.
+   - `state`: a `State` object, the current state.
+   - `transitions`: an optional ordered list of transition names to try,
+     instead of ``state.transition_order``.
+
+   Return the values returned by the transition method:
+
+   - context: possibly modified from the parameter `context`;
+   - next state name (`State` subclass name);
+   - the result output of the transition, a list.
+
+   When there is no match, ``state.no_match()`` is called and its return
+   value is returned.
+*/
+func (s *StateMachine) checkLine(context Context, state *State, transitions []string) (Context, *State, []string) {
+	if transitions == nil {
+		transitions = state.transitionOrder
+	}
+	//state_correction = None
+	if s.debug {
+		fmt.Println("\nStateMachine.check_line: state=", reflect.TypeOf(state).Name())
+	}
+	for _, name := range transitions {
+		pattern := state.transitions[name].compiledPattern
+		method := state.transitions[name].transitionMethod
+		nextState := state.transitions[name].nextStateName
+		match := pattern.FindAllString(s.line, -1)
+		if match != nil {
+			if s.debug {
+				fmt.Println("\nStateMachine.check_line: Matched transition")
+			}
+		}
+	}
 }
 
 /*
@@ -438,7 +491,7 @@ func (s *State) makeTransition(name, nextState string) (Transition, error) {
 		return Transition{}, &TransitionPatternNotFound{"TransitionPatternNotFound: " + name + " not in " + reflect.TypeOf(s).Name()}
 	}
 
-	method := reflect.New(reflect.TypeOf(s)).FieldByName(name)
+	method := reflect.New(reflect.TypeOf(s)).MethodByName(name)
 	if !method.IsValid() {
 		return Transition{}, &TransitionMethodNotFound{"TransitionMethodNotFound: " + name + " not in " + reflect.TypeOf(s).Name()}
 	}
