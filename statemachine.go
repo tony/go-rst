@@ -139,20 +139,29 @@ func (s *StateMachine) run(inputLines StringList, inputOffset int, context Conte
 	context, result := state.bof(context)
 	results = append(results, result...)
 	for {
+		var nextState string
 		_, err := s.nextLine(1)
 		if err == nil {
 			if s.debug {
 				fmt.Println("\nStateMachine.run: line " + s.line)
 			}
-			context, nextState, result := s.checkLine(context, state, transitions)
+			context, nextState, result = s.checkLine(context, state, transitions)
 		} else {
 			// EOFError
+			if s.debug {
+				fmt.Println("\nStateMachine.run: %s.eof transition", reflect.TypeOf(state).Name())
+			}
+			result = state.eof(context)
+			results = append(results, result...)
+			break
 		}
+		results = append(result, result...)
 
 		// FIXME: implement TransitionCorrection
 
 		// FIXME: implement StateCorrection
 
+		state, _ = s.getState(nextState)
 	}
 }
 
@@ -212,7 +221,7 @@ func (s *StateMachine) nextLine(n int) (string, error) {
    When there is no match, ``state.no_match()`` is called and its return
    value is returned.
 */
-func (s *StateMachine) checkLine(context Context, state *State, transitions []string) (Context, *State, []string) {
+func (s *StateMachine) checkLine(context Context, state *State, transitions []string) (Context, string, []string) {
 	if transitions == nil {
 		transitions = state.transitionOrder
 	}
@@ -229,8 +238,18 @@ func (s *StateMachine) checkLine(context Context, state *State, transitions []st
 			if s.debug {
 				fmt.Println("\nStateMachine.check_line: Matched transition")
 			}
+			retv := method.Call([]reflect.Value{
+				reflect.ValueOf(match),
+				reflect.ValueOf(context),
+				reflect.ValueOf(nextState),
+			})
+			return retv[0].Interface().(Context), retv[1].Interface().(string), retv[2].Interface().([]string)
 		}
 	}
+	if s.debug {
+		fmt.Println("\nStateMachine.check_line: No match in state ", reflect.TypeOf(state).Name())
+	}
+	return state.noMatch(context, transitions)
 }
 
 /*
@@ -524,7 +543,7 @@ func (s *State) makeTransitions(pairs []TransitionNameAndNextState) (names []str
 
    Override in subclasses to catch this event.
 */
-func (s *State) noMatch(context Context, transitions map[string]Transition) (Context, string, []string) {
+func (s *State) noMatch(context Context, transitions []string) (Context, string, []string) {
 	return context, "", nil
 }
 
