@@ -428,19 +428,22 @@ func (s *State) removeTransition(name string) error {
 
    Exceptions: `TransitionPatternNotFound`, `TransitionMethodNotFound`.
 */
-func (s *State) makeTransition(name, nextState string) Transition {
+func (s *State) makeTransition(name, nextState string) (Transition, error) {
 	if nextState == "" {
 		nextState = reflect.TypeOf(s).Name()
 	}
 
 	pattern, ok := s.patterns[name]
 	if !ok {
-		panic("TransitionPatternNotFound: " + name + " not in " + reflect.TypeOf(s).Name())
+		return Transition{}, &TransitionPatternNotFound{"TransitionPatternNotFound: " + name + " not in " + reflect.TypeOf(s).Name()}
 	}
 
 	method := reflect.New(reflect.TypeOf(s)).FieldByName(name)
+	if !method.IsValid() {
+		return Transition{}, &TransitionMethodNotFound{"TransitionMethodNotFound: " + name + " not in " + reflect.TypeOf(s).Name()}
+	}
 
-	return Transition{pattern, method, nextState}
+	return Transition{pattern, method, nextState}, nil
 }
 
 /*
@@ -451,7 +454,7 @@ func (s *State) makeTransition(name, nextState string) Transition {
 */
 func (s *State) makeTransitions(pairs []TransitionNameAndNextState) (names []string, transitions map[string]Transition) {
 	for _, pair := range pairs {
-		transitions[pair.name] = s.makeTransition(pair.name, pair.nextState)
+		transitions[pair.name], _ = s.makeTransition(pair.name, pair.nextState)
 		names = append(names, pair.name)
 	}
 	return
@@ -887,5 +890,21 @@ type UnknownTransitionError struct {
 }
 
 func (e *UnknownTransitionError) Error() string {
+	return e.msg
+}
+
+type TransitionPatternNotFound struct {
+	msg string
+}
+
+func (e *TransitionPatternNotFound) Error() string {
+	return e.msg
+}
+
+type TransitionMethodNotFound struct {
+	msg string
+}
+
+func (e *TransitionMethodNotFound) Error() string {
 	return e.msg
 }
