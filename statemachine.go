@@ -109,7 +109,7 @@ func (s *StateMachine) unlink() {
    - `input_source`: name or path of source of `input_lines`.
    - `initial_state`: name of initial state.
 */
-func (s *StateMachine) run(inputLines StringList, inputOffset int, context Context, initialState string) {
+func (s *StateMachine) run(inputLines StringList, inputOffset int, context Context, initialState string) []string {
 	s.runtimeInit()
 
 	s.inputLines = inputLines
@@ -161,8 +161,11 @@ func (s *StateMachine) run(inputLines StringList, inputOffset int, context Conte
 
 		// FIXME: implement StateCorrection
 
+		transitions = nil
 		state, _ = s.getState(nextState)
 	}
+	s.observers = nil
+	return results
 }
 
 /*
@@ -190,9 +193,9 @@ func (s *StateMachine) getState(nextState string) (*State, error) {
 // Load `self.line` with the `n`'th next line and return it.
 func (s *StateMachine) nextLine(n int) (string, error) {
 	s.lineOffset += n
-	if s.lineOffset < s.inputLines.Length() {
-		s.line = s.inputLines.GetItem(s.lineOffset)
-	} else {
+	var err error
+	s.line, err = s.inputLines.GetItem(s.lineOffset)
+	if err != nil {
 		// IndexError
 		s.line = ""
 		s.notifyObservers()
@@ -200,6 +203,19 @@ func (s *StateMachine) nextLine(n int) (string, error) {
 	}
 	s.notifyObservers()
 	return s.line, nil
+}
+
+// Return true if the next line is blank or non-existant.
+func (s *StateMachine) isNextLineBlank() bool {
+	line, err := s.inputLines.GetItem(s.lineOffset + 1)
+	if err == nil {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			return true
+		}
+		return false
+	}
+	return true
 }
 
 /*
@@ -664,8 +680,11 @@ func (v *ViewList) Length() int {
 	return len(v.data)
 }
 
-func (v *ViewList) GetItem(index int) string {
-	return v.data[index]
+func (v *ViewList) GetItem(index int) (string, error) {
+	if index < len(v.data) && index >= 0 {
+		return v.data[index], nil
+	}
+	return "", &IndexError{"index error"}
 }
 
 func (v *ViewList) GetItemsSlice(start, stop int) ViewList {

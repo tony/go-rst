@@ -35,7 +35,7 @@ func TestViewList(t *testing.T) {
 	}
 
 	// test GetItem
-	if v.GetItem(3) != "d" {
+	if it, _ := v.GetItem(3); it != "d" {
 		t.Error("GetItem at index 3 failed")
 	}
 
