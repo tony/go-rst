@@ -218,6 +218,42 @@ func (s *StateMachine) isNextLineBlank() bool {
 	return true
 }
 
+// Return true if the input is at or past end-of-file.
+func (s *StateMachine) AtEof() bool {
+	return s.lineOffset >= (s.inputLines.Length() - 1)
+}
+
+// Return true if the input is at or before beginning-of-file.
+func (s *StateMachine) AtBof() bool {
+	return s.lineOffset <= 0
+}
+
+// Load `self.line` with the `n`'th previous line and return it.
+func (s *StateMachine) previousLine(n int) string {
+	s.lineOffset -= n
+	if s.lineOffset < 0 {
+		s.line = ""
+	} else {
+		s.line, _ = s.inputLines.GetItem(s.lineOffset)
+	}
+	s.notifyObservers()
+	return s.line
+}
+
+// Jump to absolute line offset `line_offset`, load and return it.
+func (s *StateMachine) GotoLine(lineOffset int) (string, error) {
+	s.lineOffset = lineOffset - s.inputOffset
+	var err error
+	s.line, err = s.inputLines.GetItem(s.lineOffset)
+	if err != nil {
+		s.line = ""
+		s.notifyObservers()
+		return s.line, err
+	}
+	s.notifyObservers()
+	return s.line, nil
+}
+
 /*
    Examine one line of input for a transition match & execute its method.
 
