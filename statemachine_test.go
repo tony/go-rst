@@ -130,4 +130,22 @@ func TestStringList(t *testing.T) {
 	if buf.String() != "{{[aa c aa d e f g h] [{t 0} {t 1} {t 2} {t 3} {t 4} {t 5} {t 6} {t 7}] <nil> 0}}" {
 		t.Error("Repalace(\"c\", \"aa\") failed")
 	}
+
+	s.DeleteItemsSlice(0, 4)
+	buf.Reset()
+	fmt.Fprint(&buf, s)
+	if buf.String() != "{{[e f g h] [{t 4} {t 5} {t 6} {t 7}] <nil> 0}}" {
+		t.Error("DeleteItemsSlice(0, 3) failed")
+	}
+
+	data2 := []string{"a", "b"}
+	s2 := StringList{}
+	s2.Init(data2, "s", nil, nil, 0)
+	// test InsertItemsSlice
+	s.InsertItemsSlice(2, s2)
+	buf.Reset()
+	fmt.Fprint(&buf, s)
+	if buf.String() != "{{[e f a b g h] [{t 4} {t 5} {s 0} {s 1} {t 6} {t 7}] <nil> 0}}" {
+		t.Error("InsertItemsSlice(2, s2) failed")
+	}
 }

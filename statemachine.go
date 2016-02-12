@@ -902,6 +902,10 @@ type StringList struct {
 	ViewList
 }
 
+func (s *StringList) InsertItemsSlice(i int, vl StringList) {
+	s.ViewList.InsertItemsSlice(i, vl.ViewList)
+}
+
 /*
    Trim `length` characters off the beginning of each item, in-place,
    from index `start` to `end`.  No whitespace-checking is done on the
