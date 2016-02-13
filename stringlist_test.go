@@ -4,16 +4,16 @@ import "testing"
 import "fmt"
 import "bytes"
 
-func TestViewList(t *testing.T) {
+func TestStringList(t *testing.T) {
 	var buf bytes.Buffer
 
-	// init ViewList
+	// init StringList
 	data := []string{"a", "b", "c", "d", "e", "f", "g", "h"}
-	v := ViewList{}
+	v := StringList{}
 	v.Init(data, "s", nil, nil, 0)
 	fmt.Fprint(&buf, v)
 	if buf.String() != "{[a b c d e f g h] [{s 0} {s 1} {s 2} {s 3} {s 4} {s 5} {s 6} {s 7}] <nil> 0}" {
-		t.Error("Init ViewList failed")
+		t.Error("Init StringList failed")
 	}
 
 	// test Info
@@ -78,7 +78,7 @@ func TestViewList(t *testing.T) {
 
 	// test InsertItemsSlice
 	data2 := []string{"i", "j"}
-	v2 := ViewList{}
+	v2 := StringList{}
 	v2.Init(data2, "t", nil, nil, 0)
 	v.InsertItemsSlice(0, v2)
 	buf.Reset()
@@ -104,7 +104,7 @@ func TestViewList(t *testing.T) {
 	}
 }
 
-func TestStringList(t *testing.T) {
+func TestStringList2(t *testing.T) {
 	var buf bytes.Buffer
 
 	// init StringList
@@ -112,14 +112,14 @@ func TestStringList(t *testing.T) {
 	s := StringList{}
 	s.Init(data, "t", nil, nil, 0)
 	fmt.Fprint(&buf, s)
-	if buf.String() != "{{[abc b c d e f g h] [{t 0} {t 1} {t 2} {t 3} {t 4} {t 5} {t 6} {t 7}] <nil> 0}}" {
+	if buf.String() != "{[abc b c d e f g h] [{t 0} {t 1} {t 2} {t 3} {t 4} {t 5} {t 6} {t 7}] <nil> 0}" {
 		t.Error("Init StringList failed")
 	}
 
 	s.TrimLeft(2, 0, 1)
 	buf.Reset()
 	fmt.Fprint(&buf, s)
-	if buf.String() != "{{[c b c d e f g h] [{t 0} {t 1} {t 2} {t 3} {t 4} {t 5} {t 6} {t 7}] <nil> 0}}" {
+	if buf.String() != "{[c b c d e f g h] [{t 0} {t 1} {t 2} {t 3} {t 4} {t 5} {t 6} {t 7}] <nil> 0}" {
 		t.Error("TrimEnd(2, 0, 1) failed")
 	}
 
@@ -127,14 +127,14 @@ func TestStringList(t *testing.T) {
 	s.Replace("b", "c")
 	buf.Reset()
 	fmt.Fprint(&buf, s)
-	if buf.String() != "{{[aa c aa d e f g h] [{t 0} {t 1} {t 2} {t 3} {t 4} {t 5} {t 6} {t 7}] <nil> 0}}" {
+	if buf.String() != "{[aa c aa d e f g h] [{t 0} {t 1} {t 2} {t 3} {t 4} {t 5} {t 6} {t 7}] <nil> 0}" {
 		t.Error("Repalace(\"c\", \"aa\") failed")
 	}
 
 	s.DeleteItemsSlice(0, 4)
 	buf.Reset()
 	fmt.Fprint(&buf, s)
-	if buf.String() != "{{[e f g h] [{t 4} {t 5} {t 6} {t 7}] <nil> 0}}" {
+	if buf.String() != "{[e f g h] [{t 4} {t 5} {t 6} {t 7}] <nil> 0}" {
 		t.Error("DeleteItemsSlice(0, 3) failed")
 	}
 
@@ -145,7 +145,7 @@ func TestStringList(t *testing.T) {
 	s.InsertItemsSlice(2, s2)
 	buf.Reset()
 	fmt.Fprint(&buf, s)
-	if buf.String() != "{{[e f a b g h] [{t 4} {t 5} {s 0} {s 1} {t 6} {t 7}] <nil> 0}}" {
+	if buf.String() != "{[e f a b g h] [{t 4} {t 5} {s 0} {s 1} {t 6} {t 7}] <nil> 0}" {
 		t.Error("InsertItemsSlice(2, s2) failed")
 	}
 }

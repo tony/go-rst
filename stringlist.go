@@ -9,7 +9,7 @@ http://sourceforge.net/p/docutils/code/HEAD/tree/trunk/docutils/docutils/statema
 
 import "strings"
 
-type ViewListItem struct {
+type StringListItem struct {
 	source string
 	offset int
 }
@@ -31,29 +31,29 @@ type ViewListItem struct {
    This information is accessible via the `source()`, `offset()`, and
    `info()` methods.
 */
-type ViewList struct {
+type StringList struct {
 	//The actual list of data, flattened from various sources.
 	data []string
 
 	// A list of (source, offset) pairs, same length as `self.data`: the
 	// source of each line and the offset of each line from the beginning of
 	// its source.
-	items []ViewListItem
+	items []StringListItem
 
 	// The parent list.
-	parent *ViewList
+	parent *StringList
 
 	// Offset of this list from the beginning of the parent list.
 	parentOffset int
 }
 
-func (v *ViewList) Init(initlist []string, source string, items []ViewListItem, parent *ViewList, parentOffset int) {
+func (v *StringList) Init(initlist []string, source string, items []StringListItem, parent *StringList, parentOffset int) {
 	v.parent = parent
 	v.parentOffset = parentOffset
 	v.data = initlist
 	if items == nil {
 		for i, _ := range initlist {
-			v.items = append(v.items, ViewListItem{source, i})
+			v.items = append(v.items, StringListItem{source, i})
 		}
 	} else {
 		v.items = items
@@ -63,7 +63,7 @@ func (v *ViewList) Init(initlist []string, source string, items []ViewListItem, 
 	}
 }
 
-func (v *ViewList) Contains(item string) bool {
+func (v *StringList) Contains(item string) bool {
 	for _, d := range v.data {
 		if d == item {
 			return true
@@ -72,31 +72,31 @@ func (v *ViewList) Contains(item string) bool {
 	return false
 }
 
-func (v *ViewList) Length() int {
+func (v *StringList) Length() int {
 	return len(v.data)
 }
 
-func (v *ViewList) GetItem(index int) (string, error) {
+func (v *StringList) GetItem(index int) (string, error) {
 	if index < len(v.data) && index >= 0 {
 		return v.data[index], nil
 	}
 	return "", &IndexError{"index error"}
 }
 
-func (v *ViewList) GetItemsSlice(start, stop int) ViewList {
-	vl := ViewList{}
+func (v *StringList) GetItemsSlice(start, stop int) StringList {
+	vl := StringList{}
 	vl.Init(v.data[start:stop], "", v.items, v, start)
 	return vl
 }
 
-func (v *ViewList) SetItem(index int, item string) {
+func (v *StringList) SetItem(index int, item string) {
 	v.data[index] = item
 	if v.parent != nil {
 		v.parent.SetItem(index+v.parentOffset, item)
 	}
 }
 
-func (v *ViewList) SetItemsSlice(start, stop int, items ViewList) {
+func (v *StringList) SetItemsSlice(start, stop int, items StringList) {
 	for i := start; i < stop; i++ {
 		v.data[i] = items.data[i]
 		v.items[i] = items.items[i]
@@ -107,7 +107,7 @@ func (v *ViewList) SetItemsSlice(start, stop int, items ViewList) {
 	}
 }
 
-func (v *ViewList) DeleteItem(index int) {
+func (v *StringList) DeleteItem(index int) {
 	v.data = append(v.data[:index], v.data[index+1:]...)
 	v.items = append(v.items[:index], v.items[index+1:]...)
 	if v.parent != nil {
@@ -115,7 +115,7 @@ func (v *ViewList) DeleteItem(index int) {
 	}
 }
 
-func (v *ViewList) DeleteItemsSlice(start, stop int) {
+func (v *StringList) DeleteItemsSlice(start, stop int) {
 	v.data = append(v.data[:start], v.data[stop:]...)
 	v.items = append(v.items[:start], v.items[stop:]...)
 	if v.parent != nil {
@@ -123,23 +123,23 @@ func (v *ViewList) DeleteItemsSlice(start, stop int) {
 	}
 }
 
-func (v *ViewList) Add(other ViewList) ViewList {
+func (v *StringList) Add(other StringList) StringList {
 	data := append(v.data, other.data...)
 	items := append(v.items, other.items...)
-	result := ViewList{}
+	result := StringList{}
 	result.Init(data, "", items, nil, 0)
 	return result
 }
 
-func (v *ViewList) Radd(other ViewList) ViewList {
+func (v *StringList) Radd(other StringList) StringList {
 	data := append(other.data, v.data...)
 	items := append(other.items, v.items...)
-	result := ViewList{}
+	result := StringList{}
 	result.Init(data, "", items, nil, 0)
 	return result
 }
 
-func (v *ViewList) Extend(other ViewList) {
+func (v *StringList) Extend(other StringList) {
 	if v.parent != nil {
 		v.parent.InsertItemsSlice(len(v.data)+v.parentOffset, other)
 	}
@@ -147,19 +147,19 @@ func (v *ViewList) Extend(other ViewList) {
 	v.items = append(v.items, other.items...)
 }
 
-func (v *ViewList) AppendItem(item, source string, offset int) {
+func (v *StringList) AppendItem(item, source string, offset int) {
 	if v.parent != nil {
 		v.parent.InsertItem(len(v.data)+v.parentOffset, item, source, offset)
 	}
 	v.data = append(v.data, item)
-	v.items = append(v.items, ViewListItem{source, offset})
+	v.items = append(v.items, StringListItem{source, offset})
 }
 
-func (v *ViewList) AppendItemsSlice(vl ViewList) {
+func (v *StringList) AppendItemsSlice(vl StringList) {
 	v.Extend(vl)
 }
 
-func (v *ViewList) InsertItem(i int, item, source string, offset int) {
+func (v *StringList) InsertItem(i int, item, source string, offset int) {
 	if source == "" {
 		panic("source cannot be empty")
 	}
@@ -168,9 +168,9 @@ func (v *ViewList) InsertItem(i int, item, source string, offset int) {
 	copy(v.data[i+1:], v.data[i:])
 	v.data[i] = item
 
-	v.items = append(v.items, ViewListItem{})
+	v.items = append(v.items, StringListItem{})
 	copy(v.items[i+1:], v.items[i:])
-	v.items[i] = ViewListItem{source, offset}
+	v.items[i] = StringListItem{source, offset}
 
 	if v.parent != nil {
 		index := (len(v.data) + i) % len(v.data)
@@ -178,7 +178,7 @@ func (v *ViewList) InsertItem(i int, item, source string, offset int) {
 	}
 }
 
-func (v *ViewList) InsertItemsSlice(i int, vl ViewList) {
+func (v *StringList) InsertItemsSlice(i int, vl StringList) {
 	v.data = append(v.data[:i], append(vl.data, v.data[i:]...)...)
 	v.items = append(v.items[:i], append(vl.items, v.items[i:]...)...)
 	if v.parent != nil {
@@ -187,7 +187,7 @@ func (v *ViewList) InsertItemsSlice(i int, vl ViewList) {
 	}
 }
 
-func (v *ViewList) Pop(i int) string {
+func (v *StringList) Pop(i int) string {
 	if v.parent != nil {
 		index := (len(v.data) + i) % len(v.data)
 		v.parent.Pop(index + v.parentOffset)
@@ -199,7 +199,7 @@ func (v *ViewList) Pop(i int) string {
 }
 
 // Remove items from the start of the list, without touching the parent.
-func (v *ViewList) TrimStart(n int) error {
+func (v *StringList) TrimStart(n int) error {
 	if n > len(v.data) {
 		return &IndexError{"Size of trim too large;"}
 	}
@@ -215,7 +215,7 @@ func (v *ViewList) TrimStart(n int) error {
 }
 
 // Remove items from the end of the list, without touching the parent.
-func (v *ViewList) TrimEnd(n int) error {
+func (v *StringList) TrimEnd(n int) error {
 	if n > len(v.data) {
 		return &IndexError{"Size of trim too large;"}
 	}
@@ -228,43 +228,36 @@ func (v *ViewList) TrimEnd(n int) error {
 }
 
 // Return source & offset for index `i`.
-func (v *ViewList) Info(i int) (ViewListItem, error) {
+func (v *StringList) Info(i int) (StringListItem, error) {
 	if i < len(v.items) {
 		return v.items[i], nil
 	} else {
 		if i == len(v.data) { // Just past the end
-			return ViewListItem{v.items[i-1].source, -1}, nil
+			return StringListItem{v.items[i-1].source, -1}, nil
 		} else {
-			return ViewListItem{}, &IndexError{"ViewList Info IndexError"}
+			return StringListItem{}, &IndexError{"StringList Info IndexError"}
 		}
 	}
 }
 
 // Return source for index `i`.
-func (v *ViewList) Source(i int) (string, error) {
+func (v *StringList) Source(i int) (string, error) {
 	info, err := v.Info(i)
 	return info.source, err
 }
 
 // Return offset for index `i`.
-func (v *ViewList) Offset(i int) (int, error) {
+func (v *StringList) Offset(i int) (int, error) {
 	info, err := v.Info(i)
 	return info.offset, err
 }
 
 // Break link between this list and parent list.
-func (v *ViewList) Disconnect(i int) {
+func (v *StringList) Disconnect(i int) {
 	v.parent = nil
 }
 
 // A `ViewList` with string-specific methods.
-type StringList struct {
-	ViewList
-}
-
-func (s *StringList) InsertItemsSlice(i int, vl StringList) {
-	s.ViewList.InsertItemsSlice(i, vl.ViewList)
-}
 
 /*
    Trim `length` characters off the beginning of each item, in-place,
