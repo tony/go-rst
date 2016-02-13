@@ -254,6 +254,21 @@ func (s *StateMachine) GotoLine(lineOffset int) (string, error) {
 	return s.line, nil
 }
 
+// Return source of line at absolute line offset `line_offset`.
+func (s *StateMachine) GetSource(lineOffset int) (string, error) {
+	return s.inputLines.Source(lineOffset - s.inputOffset)
+}
+
+// Return line offset of current line, from beginning of file.
+func (s *StateMachine) AbsLineOffset() int {
+	return s.lineOffset + s.inputOffset
+}
+
+// Return line number of current line (counting from 1).
+func (s *StateMachine) AbsLineNumber() int {
+	return s.lineOffset + s.inputOffset + 1
+}
+
 /*
    Examine one line of input for a transition match & execute its method.
 
